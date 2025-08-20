@@ -64,23 +64,26 @@ const generateSVG = (startDateStr, data, themeColors, size) => {
 
   const monthLabels = [];
   let lastMonth = -1;
+  let lastLabelX = -Infinity;
+  const minLabelSpacing = 30;
 
-  weeks.forEach((week, i) => {
-    const firstDayOfTheWeek = week.find(day => day && !day.empty);
-    if (!firstDayOfTheWeek) return;
+  currentDate = new Date(startDate);
+  for (let i = 0; i < weekCount; i++) {
+      const firstDayOfWeek = new Date(currentDate);
+      const dayOffset = i * 7 - firstDayOfWeek.getUTCDay();
+      firstDayOfWeek.setUTCDate(firstDayOfWeek.getUTCDate() + dayOffset);
+      const month = firstDayOfWeek.getUTCMonth();
+      const currentLabelX = PADDING + WEEKDAY_LABEL_WIDTH + i * (SQUARE_SIZE + SQUARE_GAP);
 
-    const currentDay = new Date(firstDayOfTheWeek.date + 'T00:00:00Z');
-    const month = currentDay.getUTCMonth();
-
-    if (month !== lastMonth) {
-        const currentLabelX = PADDING + WEEKDAY_LABEL_WIDTH + i * (SQUARE_SIZE + SQUARE_GAP);
-        monthLabels.push({
-            x: currentLabelX,
-            text: currentDay.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })
-        });
-        lastMonth = month;
-    }
-  });
+      if ((i === 0 || month !== lastMonth) && currentLabelX > lastLabelX + minLabelSpacing) {
+          monthLabels.push({
+              x: currentLabelX,
+              text: firstDayOfWeek.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })
+          });
+          lastMonth = month;
+          lastLabelX = currentLabelX;
+      }
+  }
 
   const allDays = weeks.flat().filter(day => day && !day.empty);
   allDays.sort((a, b) => a.count - b.count);

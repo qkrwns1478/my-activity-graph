@@ -5,9 +5,10 @@ export default function App() {
   const [startDate, setStartDate] = useState('20250101');
   const [data, setData] = useState('');
   const [theme, setTheme] = useState('grass');
-  const [size, setSize] = useState('12');
+  const [size, setSize] = useState('14');
   const [imageUrl, setImageUrl] = useState('');
   const [origin, setOrigin] = useState('');
+  const [toast, setToast] = useState({ show: false, message: '' });
 
   useEffect(() => {
     setOrigin(window.location.origin);
@@ -29,19 +30,31 @@ export default function App() {
     }
   }, [origin, startDate, data, theme, size]);
 
+  const showToast = (message) => {
+    setToast({ show: true, message });
+    setTimeout(() => {
+      setToast({ show: false, message: '' });
+    }, 3000);
+  };
+
   const handleCopyToClipboard = () => {
     const markdownText = `![Activity Graph](${imageUrl})`;
     navigator.clipboard.writeText(markdownText)
-      .then(() => alert('마크다운 코드가 클립보드에 복사되었습니다!'))
-      .catch(err => console.error('Copy failed', err));
+      .then(() => {
+        showToast('Copied to clipboard!');
+      })
+      .catch(err => {
+        console.error('Copy failed', err)
+        showToast('Failed to copy.');
+      });
   };
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col items-center justify-center font-sans p-4">
       <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-8 space-y-8">
         <header className="text-center">
-          <h1 className="text-4xl font-bold text-gray-800">Activity Calendar Image Generator</h1>
-          <p className="text-gray-500 mt-2">Make a dynamic activity graph for cooler README.</p>
+          <h1 className="text-4xl font-bold text-gray-800">Activity Graph Generator</h1>
+          <p className="text-gray-500 mt-2">Make a dynamic activity graph for cooler README</p>
         </header>
         <main className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -85,9 +98,9 @@ export default function App() {
                 onChange={(e) => setSize(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white"
               >
-                <option value="10">Smaller</option>
-                <option value="12">Regular</option>
-                <option value="14">Larger</option>
+                <option value="12">Smaller</option>
+                <option value="14">Regular</option>
+                <option value="16">Larger</option>
               </select>
             </div>
             <div className="md:col-span-3">
@@ -106,16 +119,22 @@ export default function App() {
           </div>
           {imageUrl && (
             <div className="space-y-4">
-              <div>
+              {/* <div>
                 <h3 className="text-lg font-semibold text-gray-800">Generated Image URL</h3>
                 <div className="mt-2 p-3 bg-gray-100 rounded-md text-sm text-gray-600 break-all font-mono">
                   {imageUrl}
                 </div>
-              </div>
+              </div> */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">Preview</h3>
                 <div className="mt-2 p-4 border border-gray-200 rounded-md flex justify-center items-center bg-gray-50 overflow-auto">
-                  <img src={imageUrl} alt="Generated Activity Graph" />
+                  <object 
+                    type="image/svg+xml" 
+                    data={imageUrl} 
+                    aria-label="Activity Graph Preview"
+                  >
+                    Failed to load SVG
+                  </object>
                 </div>
               </div>
               <div>
@@ -133,12 +152,18 @@ export default function App() {
             </div>
           )}
         </main>
-        <footer className="text-center text-gray-400 text-sm pt-6 border-t">
+        {/* <footer className="text-center text-gray-400 text-sm pt-6">
           <p>
             © 2025 ParkJS. All rights reserved.
           </p>
-        </footer>
+        </footer> */}
       </div>
+
+      {toast.show && (
+        <div className="fixed bottom-5 right-5 bg-gray-800 text-white px-5 py-3 rounded-lg shadow-lg animate-fade-in-out">
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 }

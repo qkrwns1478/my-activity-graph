@@ -17,7 +17,7 @@ const getContributionColor = (count, colors) => {
 };
 
 const generateSVG = (startDateStr, data, themeColors, size) => {
-  const SQUARE_SIZE = parseInt(size, 10) || 10;
+  const SQUARE_SIZE = parseInt(size, 10) || 12;
   const SQUARE_GAP = Math.max(2, Math.floor(SQUARE_SIZE / 5));
   const PADDING = Math.max(20, SQUARE_SIZE * 2);
   const FONT_SIZE = Math.max(9, Math.floor(SQUARE_SIZE * 0.9));
@@ -62,26 +62,23 @@ const generateSVG = (startDateStr, data, themeColors, size) => {
 
   const monthLabels = [];
   let lastMonth = -1;
-  let lastLabelX = -Infinity;
-  const minLabelSpacing = 30;
 
-  currentDate = new Date(startDate);
-  for (let i = 0; i < weekCount; i++) {
-      const firstDayOfWeek = new Date(currentDate);
-      const dayOffset = i * 7 - firstDayOfWeek.getUTCDay();
-      firstDayOfWeek.setUTCDate(firstDayOfWeek.getUTCDate() + dayOffset);
-      const month = firstDayOfWeek.getUTCMonth();
-      const currentLabelX = PADDING + WEEKDAY_LABEL_WIDTH + i * (SQUARE_SIZE + SQUARE_GAP);
+  weeks.forEach((week, i) => {
+    const firstDayOfTheWeek = week.find(day => day && !day.empty);
+    if (!firstDayOfTheWeek) return;
 
-      if ((i === 0 || month !== lastMonth) && currentLabelX > lastLabelX + minLabelSpacing) {
-          monthLabels.push({
-              x: currentLabelX,
-              text: firstDayOfWeek.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })
-          });
-          lastMonth = month;
-          lastLabelX = currentLabelX;
-      }
-  }
+    const currentDay = new Date(firstDayOfTheWeek.date + 'T00:00:00Z');
+    const month = currentDay.getUTCMonth();
+
+    if (month !== lastMonth) {
+        const currentLabelX = PADDING + WEEKDAY_LABEL_WIDTH + i * (SQUARE_SIZE + SQUARE_GAP);
+        monthLabels.push({
+            x: currentLabelX,
+            text: currentDay.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })
+        });
+        lastMonth = month;
+    }
+  });
 
   return `
     <svg width="${svgWidth}" height="${svgHeight}" xmlns="http://www.w3.org/2000/svg">

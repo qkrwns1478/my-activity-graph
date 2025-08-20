@@ -40,14 +40,14 @@ export default function App() {
     <div className="bg-gray-50 min-h-screen flex flex-col items-center justify-center font-sans p-4">
       <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-8 space-y-8">
         <header className="text-center">
-          <h1 className="text-4xl font-bold text-gray-800">활동 달력 이미지 생성기</h1>
-          <p className="text-gray-500 mt-2">GitHub README에 사용할 수 있는 동적 활동 그래프를 만들어보세요.</p>
+          <h1 className="text-4xl font-bold text-gray-800">Activity Calendar Image Generator</h1>
+          <p className="text-gray-500 mt-2">Make a dynamic activity graph for cooler README.</p>
         </header>
         <main className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 mb-1">
-                시작 날짜 (YYYYMMDD)
+                Start Date (YYYYMMDD)
               </label>
               <input
                 type="text"
@@ -60,7 +60,7 @@ export default function App() {
             </div>
             <div>
               <label htmlFor="theme-select" className="block text-sm font-medium text-gray-700 mb-1">
-                테마 선택
+                Theme
               </label>
               <select
                 id="theme-select"
@@ -77,7 +77,7 @@ export default function App() {
             </div>
             <div>
               <label htmlFor="size-select" className="block text-sm font-medium text-gray-700 mb-1">
-                이미지 크기
+                Size
               </label>
               <select
                 id="size-select"
@@ -85,14 +85,14 @@ export default function App() {
                 onChange={(e) => setSize(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white"
               >
-                <option value="10">작게</option>
-                <option value="12">보통</option>
-                <option value="14">크게</option>
+                <option value="10">Smaller</option>
+                <option value="12">Regular</option>
+                <option value="14">Larger</option>
               </select>
             </div>
             <div className="md:col-span-3">
               <label htmlFor="data" className="block text-sm font-medium text-gray-700 mb-1">
-                활동 데이터 (쉼표로 구분)
+                Activity data (separated by commas)
               </label>
               <textarea
                 id="data"
@@ -107,19 +107,19 @@ export default function App() {
           {imageUrl && (
             <div className="space-y-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800">생성된 이미지 URL</h3>
+                <h3 className="text-lg font-semibold text-gray-800">Generated Image URL</h3>
                 <div className="mt-2 p-3 bg-gray-100 rounded-md text-sm text-gray-600 break-all font-mono">
                   {imageUrl}
                 </div>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-800">미리보기</h3>
+                <h3 className="text-lg font-semibold text-gray-800">Preview</h3>
                 <div className="mt-2 p-4 border border-gray-200 rounded-md flex justify-center items-center bg-gray-50 overflow-auto">
                   <img src={imageUrl} alt="Generated Activity Graph" />
                 </div>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-800">GitHub README용 마크다운</h3>
+                <h3 className="text-lg font-semibold text-gray-800">Markdown</h3>
                 <div className="mt-2 p-3 bg-gray-100 rounded-md text-sm text-gray-600 break-all font-mono">
                   {`![Activity Graph](${imageUrl})`}
                 </div>
@@ -127,7 +127,7 @@ export default function App() {
                   onClick={handleCopyToClipboard}
                   className="mt-3 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                  마크다운 복사
+                  Copy
                 </button>
               </div>
             </div>

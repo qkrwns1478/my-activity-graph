@@ -1,22 +1,22 @@
 import { NextResponse } from 'next/server';
 
-const COLORS = {
-  level0: '#ebedf0',
-  level1: '#9be9a8',
-  level2: '#40c463',
-  level3: '#30a14e',
-  level4: '#216e39',
+const THEMES = {
+  grass: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
+  halloween: ['#ebedf0', '#fdf436', '#ffc700', '#ff9100', '#06001c'],
+  teal: ['#ebedf0', '#a3f7ff', '#69d7e5', '#40a8b6', '#1e6b78'],
+  blue: ['#ebedf0', '#b3c5ff', '#89a2ff', '#6080ff', '#365dfd'],
+  winter: ['#ebedf0', '#a4d4ff', '#78baff', '#4b9eff', '#1982ff'],
 };
 
-const getContributionColor = (count) => {
-  if (count > 20) return COLORS.level4;
-  if (count > 10) return COLORS.level3;
-  if (count > 5) return COLORS.level2;
-  if (count > 0) return COLORS.level1;
-  return COLORS.level0;
+const getContributionColor = (count, colors) => {
+  if (count > 20) return colors[4];
+  if (count > 10) return colors[3];
+  if (count > 5) return colors[2];
+  if (count > 0) return colors[1];
+  return colors[0];
 };
 
-const generateSVG = (startDateStr, data) => {
+const generateSVG = (startDateStr, data, themeColors) => {
   const SQUARE_SIZE = 10;
   const SQUARE_GAP = 2;
   const PADDING = 20;
@@ -77,7 +77,7 @@ const generateSVG = (startDateStr, data) => {
     <svg width="${svgWidth}" height="${svgHeight}" xmlns="http://www.w3.org/2000/svg">
       <style>
         .month-label, .weekday-label { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 9px; fill: #767676; }
-        .day-cell:hover { stroke: #216e39; stroke-width: 1px; }
+        .day-cell:hover { stroke: black; stroke-width: 0.5px; }
       </style>
       <g transform="translate(${PADDING}, ${PADDING})">
         ${monthLabels.map(label => `<text x="${label.x}" y="0" class="month-label">${label.text}</text>`).join('')}
@@ -90,7 +90,7 @@ const generateSVG = (startDateStr, data) => {
               ${week.map((day, dayIndex) => {
                 if (!day || day.empty) return '';
                 return `
-                  <rect class="day-cell" width="${SQUARE_SIZE}" height="${SQUARE_SIZE}" x="0" y="${dayIndex * (SQUARE_SIZE + SQUARE_GAP)}" fill="${getContributionColor(day.count)}" rx="2" ry="2" data-date="${day.date}" data-count="${day.count}">
+                  <rect class="day-cell" width="${SQUARE_SIZE}" height="${SQUARE_SIZE}" x="0" y="${dayIndex * (SQUARE_SIZE + SQUARE_GAP)}" fill="${getContributionColor(day.count, themeColors)}" rx="2" ry="2" data-date="${day.date}" data-count="${day.count}">
                     <title>${day.date}: ${day.count} contributions</title>
                   </rect>
                 `;
@@ -107,6 +107,8 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const start = searchParams.get('start');
   const data = searchParams.get('data');
+  const theme = searchParams.get('theme') || 'grass';
+  const themeColors = THEMES[theme] || THEMES.grass;
 
   if (!start || !data) {
     return NextResponse.json({ error: 'start and data parameters are required' }, { status: 400 });
@@ -116,7 +118,7 @@ export async function GET(request) {
     return NextResponse.json({ error: 'start parameter must be in YYYYMMDD format' }, { status: 400 });
   }
 
-  const svg = generateSVG(start, data);
+  const svg = generateSVG(start, data, themeColors);
 
   return new Response(svg, {
     status: 200,

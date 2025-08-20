@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 export default function App() {
   const [startDate, setStartDate] = useState('20250101');
   const [data, setData] = useState('');
+  const [theme, setTheme] = useState('grass');
   const [imageUrl, setImageUrl] = useState('');
   const [origin, setOrigin] = useState('');
 
@@ -15,12 +16,16 @@ export default function App() {
 
   useEffect(() => {
     if (origin && startDate && data) {
-      const query = new URLSearchParams({ start: startDate, data: data }).toString();
+      const query = new URLSearchParams({ 
+        start: startDate, 
+        data: data,
+        theme: theme,
+      }).toString();
       setImageUrl(`${origin}/api/graph?${query}`);
     } else {
       setImageUrl('');
     }
-  }, [origin, startDate, data]);
+  }, [origin, startDate, data, theme]);
 
   const handleCopyToClipboard = () => {
     const markdownText = `![Activity Graph](${imageUrl})`;
@@ -50,6 +55,23 @@ export default function App() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="20250101"
               />
+            </div>
+            <div>
+              <label htmlFor="theme-select" className="block text-sm font-medium text-gray-700 mb-1">
+                테마 선택
+              </label>
+              <select
+                id="theme-select"
+                value={theme}
+                onChange={(e) => setTheme(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+              >
+                <option value="grass">Grass</option>
+                <option value="halloween">Halloween</option>
+                <option value="teal">Teal</option>
+                <option value="blue">Blue</option>
+                <option value="winter">Winter</option>
+              </select>
             </div>
             <div className="md:col-span-2">
               <label htmlFor="data" className="block text-sm font-medium text-gray-700 mb-1">

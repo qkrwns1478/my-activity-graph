@@ -16,12 +16,16 @@ const getContributionColor = (count, colors) => {
   return colors[0];
 };
 
-const generateSVG = (startDateStr, data, themeColors) => {
-  const SQUARE_SIZE = 10;
-  const SQUARE_GAP = 2;
-  const PADDING = 20;
-  const MONTH_LABEL_HEIGHT = 20;
-  const WEEKDAY_LABEL_WIDTH = 20;
+const generateSVG = (startDateStr, data, themeColors, size) => {
+  const SQUARE_SIZE = parseInt(size, 10) || 10;
+  const SQUARE_GAP = Math.max(2, Math.floor(SQUARE_SIZE / 5));
+  const PADDING = Math.max(20, SQUARE_SIZE * 2);
+  const FONT_SIZE = Math.max(9, Math.floor(SQUARE_SIZE * 0.9));
+  
+  const MONTH_LABEL_HEIGHT = Math.max(20, SQUARE_SIZE * 2);
+  const WEEKDAY_LABEL_WIDTH = Math.max(20, SQUARE_SIZE * 2);
+  const TOOLTIP_HEIGHT = Math.max(18, SQUARE_SIZE * 1.8);
+  const TOOLTIP_PADDING = Math.max(10, SQUARE_SIZE);
 
   const startDate = new Date(`${startDateStr.slice(0, 4)}-${startDateStr.slice(4, 6)}-${startDateStr.slice(6, 8)}T00:00:00Z`);
   const values = data.split(',').map(Number);
@@ -76,8 +80,25 @@ const generateSVG = (startDateStr, data, themeColors) => {
   return `
     <svg width="${svgWidth}" height="${svgHeight}" xmlns="http://www.w3.org/2000/svg">
       <style>
-        .month-label, .weekday-label { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 9px; fill: #767676; }
-        .day-cell:hover { stroke: black; stroke-width: 0.5px; }
+        .month-label, .weekday-label, .tooltip-text { 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+          font-size: ${FONT_SIZE}px; 
+          fill: #767676; 
+        }
+        .day-cell-group .tooltip {
+          display: none;
+        }
+        .day-cell-group:hover .tooltip {
+          display: block;
+        }
+        .day-cell-group:hover .day-cell {
+          stroke: black;
+          stroke-width: 0.5px;
+        }
+        .tooltip-text {
+          fill: white;
+          font-size: ${FONT_SIZE - 1}px;
+        }
       </style>
       <g transform="translate(${PADDING}, ${PADDING})">
         ${monthLabels.map(label => `<text x="${label.x}" y="0" class="month-label">${label.text}</text>`).join('')}
@@ -85,18 +106,52 @@ const generateSVG = (startDateStr, data, themeColors) => {
         <text x="0" y="${MONTH_LABEL_HEIGHT + SQUARE_SIZE * 3 + SQUARE_GAP * 2}" class="weekday-label">W</text>
         <text x="0" y="${MONTH_LABEL_HEIGHT + SQUARE_SIZE * 5 + SQUARE_GAP * 4}" class="weekday-label">F</text>
         <g transform="translate(${WEEKDAY_LABEL_WIDTH}, ${MONTH_LABEL_HEIGHT})">
-          ${weeks.map((week, weekIndex) => `
-            <g transform="translate(${weekIndex * (SQUARE_SIZE + SQUARE_GAP)}, 0)">
-              ${week.map((day, dayIndex) => {
-                if (!day || day.empty) return '';
-                return `
-                  <rect class="day-cell" width="${SQUARE_SIZE}" height="${SQUARE_SIZE}" x="0" y="${dayIndex * (SQUARE_SIZE + SQUARE_GAP)}" fill="${getContributionColor(day.count, themeColors)}" rx="2" ry="2" data-date="${day.date}" data-count="${day.count}">
-                    <title>${day.date}: ${day.count} contributions</title>
-                  </rect>
-                `;
-              }).join('')}
-            </g>
-          `).join('')}
+          ${weeks.map((week, weekIndex) => 
+            week.map((day, dayIndex) => {
+              if (!day || day.empty) return '';
+              const x = weekIndex * (SQUARE_SIZE + SQUARE_GAP);
+              const y = dayIndex * (SQUARE_SIZE + SQUARE_GAP);
+              const tooltipText = `${day.date}: ${day.count} contributions`;
+              const textLength = tooltipText.length * (FONT_SIZE * 0.55);
+              const tooltipWidth = textLength + TOOLTIP_PADDING;
+
+              return `
+                <g class="day-cell-group" transform="translate(${x}, ${y})">
+                  <rect 
+                    class="day-cell"
+                    width="${SQUARE_SIZE}" 
+                    height="${SQUARE_SIZE}" 
+                    fill="${getContributionColor(day.count, themeColors)}" 
+                    rx="2" 
+                    ry="2"
+                  />
+                  <g class="tooltip" transform="translate(${-tooltipWidth / 2 + SQUARE_SIZE / 2}, ${-TOOLTIP_HEIGHT - 5})">
+                    <rect 
+                      width="${tooltipWidth}" 
+                      height="${TOOLTIP_HEIGHT}" 
+                      rx="3" 
+                      fill="black" 
+                      opacity="0.8"
+                    />
+                    <polygon 
+                      points="${tooltipWidth / 2 - 3},${TOOLTIP_HEIGHT} ${tooltipWidth / 2 + 3},${TOOLTIP_HEIGHT} ${tooltipWidth / 2},${TOOLTIP_HEIGHT + 3}" 
+                      fill="black" 
+                      opacity="0.8"
+                    />
+                    <text 
+                      x="${tooltipWidth / 2}" 
+                      y="${TOOLTIP_HEIGHT / 2}" 
+                      dominant-baseline="middle" 
+                      text-anchor="middle" 
+                      class="tooltip-text"
+                    >
+                      ${tooltipText}
+                    </text>
+                  </g>
+                </g>
+              `;
+            }).join('')
+          ).join('')}
         </g>
       </g>
     </svg>
@@ -108,6 +163,7 @@ export async function GET(request) {
   const start = searchParams.get('start');
   const data = searchParams.get('data');
   const theme = searchParams.get('theme') || 'grass';
+  const size = searchParams.get('size') || '12';
   const themeColors = THEMES[theme] || THEMES.grass;
 
   if (!start || !data) {
@@ -118,13 +174,13 @@ export async function GET(request) {
     return NextResponse.json({ error: 'start parameter must be in YYYYMMDD format' }, { status: 400 });
   }
 
-  const svg = generateSVG(start, data, themeColors);
+  const svg = generateSVG(start, data, themeColors, size);
 
   return new Response(svg, {
     status: 200,
     headers: {
       'Content-Type': 'image/svg+xml',
-      'Cache-Control': 's-maxage=3600, stale-while-revalidate', // 1시간 캐시
+      'Cache-Control': 's-maxage=3600, stale-while-revalidate',
     },
   });
 }

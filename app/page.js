@@ -5,6 +5,7 @@ export default function App() {
   const [startDate, setStartDate] = useState('20250101');
   const [data, setData] = useState('');
   const [theme, setTheme] = useState('grass');
+  const [size, setSize] = useState('12');
   const [imageUrl, setImageUrl] = useState('');
   const [origin, setOrigin] = useState('');
 
@@ -20,12 +21,13 @@ export default function App() {
         start: startDate, 
         data: data,
         theme: theme,
+        size: size,
       }).toString();
       setImageUrl(`${origin}/api/graph?${query}`);
     } else {
       setImageUrl('');
     }
-  }, [origin, startDate, data, theme]);
+  }, [origin, startDate, data, theme, size]);
 
   const handleCopyToClipboard = () => {
     const markdownText = `![Activity Graph](${imageUrl})`;
@@ -42,7 +44,7 @@ export default function App() {
           <p className="text-gray-500 mt-2">GitHub README에 사용할 수 있는 동적 활동 그래프를 만들어보세요.</p>
         </header>
         <main className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 mb-1">
                 시작 날짜 (YYYYMMDD)
@@ -73,7 +75,22 @@ export default function App() {
                 <option value="winter">Winter</option>
               </select>
             </div>
-            <div className="md:col-span-2">
+            <div>
+              <label htmlFor="size-select" className="block text-sm font-medium text-gray-700 mb-1">
+                이미지 크기
+              </label>
+              <select
+                id="size-select"
+                value={size}
+                onChange={(e) => setSize(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+              >
+                <option value="10">작게</option>
+                <option value="12">보통</option>
+                <option value="14">크게</option>
+              </select>
+            </div>
+            <div className="md:col-span-3">
               <label htmlFor="data" className="block text-sm font-medium text-gray-700 mb-1">
                 활동 데이터 (쉼표로 구분)
               </label>
@@ -97,7 +114,7 @@ export default function App() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">미리보기</h3>
-                <div className="mt-2 p-4 border border-gray-200 rounded-md flex justify-center items-center bg-gray-50">
+                <div className="mt-2 p-4 border border-gray-200 rounded-md flex justify-center items-center bg-gray-50 overflow-auto">
                   <img src={imageUrl} alt="Generated Activity Graph" />
                 </div>
               </div>

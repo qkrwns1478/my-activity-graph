@@ -62,18 +62,24 @@ const generateSVG = (startDateStr, data, themeColors, size) => {
 
   const monthLabels = [];
   let lastMonth = -1;
+  let lastLabelX = -Infinity;
+  const minLabelSpacing = 30;
+
   currentDate = new Date(startDate);
   for (let i = 0; i < weekCount; i++) {
       const firstDayOfWeek = new Date(currentDate);
       const dayOffset = i * 7 - firstDayOfWeek.getUTCDay();
       firstDayOfWeek.setUTCDate(firstDayOfWeek.getUTCDate() + dayOffset);
       const month = firstDayOfWeek.getUTCMonth();
-      if (i === 0 || month !== lastMonth) {
+      const currentLabelX = PADDING + WEEKDAY_LABEL_WIDTH + i * (SQUARE_SIZE + SQUARE_GAP);
+
+      if ((i === 0 || month !== lastMonth) && currentLabelX > lastLabelX + minLabelSpacing) {
           monthLabels.push({
-              x: PADDING + WEEKDAY_LABEL_WIDTH + i * (SQUARE_SIZE + SQUARE_GAP),
+              x: currentLabelX,
               text: firstDayOfWeek.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })
           });
           lastMonth = month;
+          lastLabelX = currentLabelX;
       }
   }
 
@@ -91,7 +97,7 @@ const generateSVG = (startDateStr, data, themeColors, size) => {
         .day-cell-group:hover .tooltip {
           display: block;
         }
-        .day-cell-group:hover .day-cell {
+        .day-cell-group:hover .day-cell-hover {
           stroke: black;
           stroke-width: 0.5px;
         }
@@ -111,18 +117,36 @@ const generateSVG = (startDateStr, data, themeColors, size) => {
               if (!day || day.empty) return '';
               const x = weekIndex * (SQUARE_SIZE + SQUARE_GAP);
               const y = dayIndex * (SQUARE_SIZE + SQUARE_GAP);
-              const tooltipText = `${day.date}: ${day.count} contributions`;
+              return `
+                <rect 
+                  transform="translate(${x}, ${y})"
+                  width="${SQUARE_SIZE}" 
+                  height="${SQUARE_SIZE}" 
+                  fill="${getContributionColor(day.count, themeColors)}" 
+                  rx="2" 
+                  ry="2"
+                />
+              `;
+            }).join('')
+          ).join('')}
+          
+          ${weeks.map((week, weekIndex) => 
+            week.map((day, dayIndex) => {
+              if (!day || day.empty) return '';
+              const x = weekIndex * (SQUARE_SIZE + SQUARE_GAP);
+              const y = dayIndex * (SQUARE_SIZE + SQUARE_GAP);
+              const tooltipText = `${day.date}: ${day.count}`;
               const textLength = tooltipText.length * (FONT_SIZE * 0.55);
               const tooltipWidth = textLength + TOOLTIP_PADDING;
 
               return `
                 <g class="day-cell-group" transform="translate(${x}, ${y})">
                   <rect 
-                    class="day-cell"
+                    class="day-cell-hover"
                     width="${SQUARE_SIZE}" 
                     height="${SQUARE_SIZE}" 
-                    fill="${getContributionColor(day.count, themeColors)}" 
-                    rx="2" 
+                    fill="transparent"
+                    rx="2"
                     ry="2"
                   />
                   <g class="tooltip" transform="translate(${-tooltipWidth / 2 + SQUARE_SIZE / 2}, ${-TOOLTIP_HEIGHT - 5})">

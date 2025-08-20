@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 
 const THEMES = {
   grass: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
-  halloween: ['#ebedf0', '#fdf436', '#ffc700', '#ff9100', '#06001c'],
+  ocean: ['#ebedf0', '#b3c5ff', '#89a2ff', '#6080ff', '#365dfd'],
+  violet: ['#ebedf0', '#ddd6fe', '#a78bfa', '#8b5cf6', '#6d28d9'],
+  rose: ['#ebedf0', '#fecdd3', '#fb7185', '#f43f5e', '#be123c'],
+  amber: ['#ebedf0', '#fde68a', '#fbbf24', '#f59e0b', '#b45309'],
   teal: ['#ebedf0', '#a3f7ff', '#69d7e5', '#40a8b6', '#1e6b78'],
-  blue: ['#ebedf0', '#b3c5ff', '#89a2ff', '#6080ff', '#365dfd'],
-  winter: ['#ebedf0', '#a4d4ff', '#78baff', '#4b9eff', '#1982ff'],
+  mono: ['#ebedf0', '#e5e7eb', '#9ca3af', '#4b5563', '#1f2937'],
 };
 
 const getContributionColor = (count, colors) => {

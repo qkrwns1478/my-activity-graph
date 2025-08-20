@@ -10,6 +10,16 @@ export default function App() {
   const [origin, setOrigin] = useState('');
   const [toast, setToast] = useState({ show: false, message: '' });
 
+  const BUTTON_THEMES = {
+    grass: { bg: '#30a14e', hover: '#216e39' },
+    ocean: { bg: '#6080ff', hover: '#365dfd' },
+    violet: { bg: '#8b5cf6', hover: '#6d28d9' },
+    rose: { bg: '#f43f5e', hover: '#be123c' },
+    amber: { bg: '#f59e0b', hover: '#b45309' },
+    teal: { bg: '#40a8b6', hover: '#1e6b78' },
+    mono: { bg: '#4b5563', hover: '#1f2937' },
+  };
+
   useEffect(() => {
     setOrigin(window.location.origin);
     const exampleData = Array.from({ length: 180 }, () => Math.floor(Math.random() * 25)).join(',');
@@ -94,10 +104,12 @@ export default function App() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white"
               >
                 <option value="grass">Grass</option>
-                <option value="halloween">Halloween</option>
+                <option value="ocean">Ocean</option>
+                <option value="violet">Violet</option>
+                <option value="rose">Rose</option>
+                <option value="amber">Amber</option>
                 <option value="teal">Teal</option>
-                <option value="blue">Blue</option>
-                <option value="winter">Winter</option>
+                <option value="mono">Mono</option>
               </select>
             </div>
             <div>
@@ -131,12 +143,6 @@ export default function App() {
           </div>
           {imageUrl && (
             <div className="space-y-4">
-              {/* <div>
-                <h3 className="text-lg font-semibold text-gray-800">Generated Image URL</h3>
-                <div className="mt-2 p-3 bg-gray-100 rounded-md text-sm text-gray-600 break-all font-mono">
-                  {imageUrl}
-                </div>
-              </div> */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">Preview</h3>
                 <div className="mt-2 p-4 border border-gray-200 rounded-md flex justify-center items-center bg-gray-50 overflow-auto">
@@ -154,21 +160,21 @@ export default function App() {
                 <div className="mt-2 p-3 bg-gray-100 rounded-md text-sm text-gray-600 break-all font-mono">
                   {`![Activity Graph](${imageUrl})`}
                 </div>
-                <button
-                  onClick={handleCopyToClipboard}
-                  className="mt-3 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Copy
-                </button>
+                <div className='mt-3 flex justify-center'>
+                  <button
+                    onClick={handleCopyToClipboard}
+                    className="px-4 py-2 text-white font-semibold rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors"
+                    style={{ backgroundColor: BUTTON_THEMES[theme].bg, '--tw-ring-color': BUTTON_THEMES[theme].bg }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = BUTTON_THEMES[theme].hover}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = BUTTON_THEMES[theme].bg}
+                  >
+                    Copy
+                  </button>
+                </div>
               </div>
             </div>
           )}
         </main>
-        {/* <footer className="text-center text-gray-400 text-sm pt-6">
-          <p>
-            © 2025 ParkJS. All rights reserved.
-          </p>
-        </footer> */}
       </div>
 
       {toast.show && (

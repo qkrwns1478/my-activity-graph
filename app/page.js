@@ -1,103 +1,105 @@
-import Image from "next/image";
+'use client';
+import React, { useState, useEffect } from 'react';
 
-export default function Home() {
+export default function App() {
+  const [startDate, setStartDate] = useState('20250101');
+  const [data, setData] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [origin, setOrigin] = useState('');
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+    const exampleData = Array.from({ length: 180 }, () => Math.floor(Math.random() * 25)).join(',');
+    setData(exampleData);
+  }, []);
+
+  useEffect(() => {
+    if (origin && startDate && data) {
+      const query = new URLSearchParams({ start: startDate, data: data }).toString();
+      setImageUrl(`${origin}/api/graph?${query}`);
+    } else {
+      setImageUrl('');
+    }
+  }, [origin, startDate, data]);
+
+  const handleCopyToClipboard = () => {
+    const markdownText = `![Activity Graph](${imageUrl})`;
+    navigator.clipboard.writeText(markdownText)
+      .then(() => alert('마크다운 코드가 클립보드에 복사되었습니다!'))
+      .catch(err => console.error('Copy failed', err));
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="bg-gray-50 min-h-screen flex flex-col items-center justify-center font-sans p-4">
+      <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-8 space-y-8">
+        <header className="text-center">
+          <h1 className="text-4xl font-bold text-gray-800">활동 달력 이미지 생성기</h1>
+          <p className="text-gray-500 mt-2">GitHub README에 사용할 수 있는 동적 활동 그래프를 만들어보세요.</p>
+        </header>
+        <main className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="start-date" className="block text-sm font-medium text-gray-700 mb-1">
+                시작 날짜 (YYYYMMDD)
+              </label>
+              <input
+                type="text"
+                id="start-date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="20250101"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label htmlFor="data" className="block text-sm font-medium text-gray-700 mb-1">
+                활동 데이터 (쉼표로 구분)
+              </label>
+              <textarea
+                id="data"
+                rows="5"
+                value={data}
+                onChange={(e) => setData(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="5,0,12,8,..."
+              />
+            </div>
+          </div>
+          {imageUrl && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">생성된 이미지 URL</h3>
+                <div className="mt-2 p-3 bg-gray-100 rounded-md text-sm text-gray-600 break-all font-mono">
+                  {imageUrl}
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">미리보기</h3>
+                <div className="mt-2 p-4 border border-gray-200 rounded-md flex justify-center items-center bg-gray-50">
+                  <img src={imageUrl} alt="Generated Activity Graph" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">GitHub README용 마크다운</h3>
+                <div className="mt-2 p-3 bg-gray-100 rounded-md text-sm text-gray-600 break-all font-mono">
+                  {`![Activity Graph](${imageUrl})`}
+                </div>
+                <button
+                  onClick={handleCopyToClipboard}
+                  className="mt-3 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  마크다운 복사
+                </button>
+              </div>
+            </div>
+          )}
+        </main>
+        <footer className="text-center text-gray-400 text-sm pt-6 border-t">
+          <p>
+            © 2025 ParkJS. All rights reserved.
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }

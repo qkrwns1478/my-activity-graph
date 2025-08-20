@@ -82,6 +82,15 @@ const generateSVG = (startDateStr, data, themeColors, size) => {
     }
   });
 
+  const allDays = weeks.flat().filter(day => day && !day.empty);
+  allDays.sort((a, b) => a.count - b.count);
+
+  const delayMap = new Map();
+  allDays.forEach((day, index) => {
+    const delay = index * 12; 
+    delayMap.set(day.date, delay);
+  });
+
   return `
     <svg width="${svgWidth}" height="${svgHeight}" xmlns="http://www.w3.org/2000/svg">
       <style>
@@ -96,13 +105,24 @@ const generateSVG = (startDateStr, data, themeColors, size) => {
         .day-cell-group:hover .tooltip {
           display: block;
         }
-        .day-cell-group:hover .day-cell-hover {
-          stroke: black;
-          stroke-width: 0.5px;
-        }
         .tooltip-text {
           fill: white;
           font-size: ${FONT_SIZE - 1}px;
+        }
+        @keyframes popIn {
+          from { 
+            opacity: 0; 
+            transform: scale(0.8); 
+          }
+          to { 
+            opacity: 1; 
+            transform: scale(1);
+          }
+        }
+        .day-cell {
+          opacity: 0;
+          animation: popIn 0.3s ease-in-out forwards;
+          transform-origin: center;
         }
       </style>
       <g transform="translate(${PADDING}, ${PADDING})">
@@ -116,14 +136,18 @@ const generateSVG = (startDateStr, data, themeColors, size) => {
               if (!day || day.empty) return '';
               const x = weekIndex * (SQUARE_SIZE + SQUARE_GAP);
               const y = dayIndex * (SQUARE_SIZE + SQUARE_GAP);
+              const delay = delayMap.get(day.date) || 0;
               return `
                 <rect 
-                  transform="translate(${x}, ${y})"
+                  class="day-cell"
+                  x="${x}"
+                  y="${y}"
                   width="${SQUARE_SIZE}" 
                   height="${SQUARE_SIZE}" 
                   fill="${getContributionColor(day.count, themeColors)}" 
                   rx="2" 
                   ry="2"
+                  style="animation-delay: ${delay}ms;"
                 />
               `;
             }).join('')
@@ -203,7 +227,7 @@ export async function GET(request) {
     status: 200,
     headers: {
       'Content-Type': 'image/svg+xml',
-      'Cache-Control': 's-maxage=3600, stale-while-revalidate',
+      'Cache-Control': 'public, max-age=10', 
     },
   });
 }

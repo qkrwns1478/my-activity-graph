@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import { React, useState, useEffect } from 'react';
 
 export default function App() {
   const [startDate, setStartDate] = useState('20250101');
@@ -27,7 +27,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (origin && startDate && data) {
+    const isValidDate = /^\d{8}$/.test(startDate);
+    if (origin && startDate && data && isValidDate) {
       const query = new URLSearchParams({ 
         start: startDate, 
         data: data,
@@ -35,7 +36,7 @@ export default function App() {
         size: size,
       }).toString();
       setImageUrl(`${origin}/api/graph?${query}`);
-    } else {
+    } else if (!isValidDate) {
       setImageUrl('');
     }
   }, [origin, startDate, data, theme, size]);
@@ -48,6 +49,10 @@ export default function App() {
   };
 
   const handleCopyToClipboard = () => {
+    if (!imageUrl) {
+      showToast('Please enter a valid date.');
+      return;
+    }
     const markdownText = `![Activity Graph](${imageUrl})`;
     navigator.clipboard.writeText(markdownText)
       .then(() => {
@@ -91,6 +96,7 @@ export default function App() {
                 onChange={(e) => setStartDate(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="20250101"
+                maxLength="8"
               />
             </div>
             <div>
@@ -141,20 +147,26 @@ export default function App() {
               />
             </div>
           </div>
-          {imageUrl && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">Preview</h3>
-                <div className="mt-2 p-4 border border-gray-200 rounded-md flex justify-center items-center bg-gray-50 overflow-auto">
+
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">Preview</h3>
+              <div className="mt-2 p-4 border border-gray-200 rounded-md flex justify-center items-center bg-gray-50 overflow-auto min-h-[150px]">
+                {imageUrl ? (
                   <object 
                     type="image/svg+xml" 
                     data={imageUrl} 
                     aria-label="Activity Graph Preview"
+                    key={imageUrl}
                   >
                     Failed to load SVG
                   </object>
-                </div>
+                ) : (
+                  <div className="text-gray-500">Please enter a valid date (YYYYMMDD)</div>
+                )}
               </div>
+            </div>
+            {imageUrl && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">Markdown</h3>
                 <div className="mt-2 p-3 bg-gray-100 rounded-md text-sm text-gray-600 break-all font-mono">
@@ -172,8 +184,8 @@ export default function App() {
                   </button>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </main>
       </div>
 
